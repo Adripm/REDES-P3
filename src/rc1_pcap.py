@@ -1,5 +1,5 @@
 '''
-    Librería rc1-pcap. Wrapper sobre librería C PCAP para 
+    Librería rc1-pcap. Wrapper sobre librería C PCAP para
     poder usar las funciones desde Python
     Javier Ramos <javier.ramos@uam.es>
     2020
@@ -111,7 +111,7 @@ def pcap_dump(dumper:ctypes.c_void_p,header,data:bytes):
 
 
 def pcap_open_live(device:str,snaplen:int,promisc:int,to_ms:int,errbuf:bytearray) -> ctypes.c_void_p:
-    
+
     #pcap_t *pcap_open_live(const char *device, int snaplen,int promisc, int to_ms, char *errbuf)
     if device is None:
         raise ValueError("El objeto device no puede ser None")
@@ -160,7 +160,7 @@ def pcap_loop(handle:ctypes.c_void_p,cnt:int,callback_fun: Callable[[ctypes.c_vo
     global user_callback
     if handle is None:
         raise ValueError("El objeto handle no puede ser None")
-   
+
     user_callback = callback_fun
     #  typedef void (*pcap_handler)(u_char *user, const struct pcap_pkthdr *h,const u_char *bytes);
     PCAP_HANDLER = ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_char_p,ctypes.POINTER(pcappkthdr),ctypes.POINTER(ctypes.c_uint8))
@@ -209,8 +209,3 @@ def pcap_inject(handle:ctypes.c_void_p,buf:bytes,size:int) -> int:
     pi.restype = ctypes.c_int
     ret = pi(handle,ctypes.c_char_p(buf),ctypes.c_longlong(size))
     return ret
-
-
-
-
-

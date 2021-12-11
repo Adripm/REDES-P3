@@ -75,4 +75,4 @@ def initUDP():
         Retorno: Ninguno
 
     '''
-    pass
+    registerIPProtocol(process_UDP_datagram, 17)

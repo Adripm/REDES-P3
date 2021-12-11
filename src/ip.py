@@ -26,10 +26,10 @@ def chksum(msg):
             -msg: array de bytes con el contenido sobre el que se calculará el checksum
         Retorno: Entero de 16 bits con el resultado del checksum en ORDEN DE RED
     '''
-    s = 0       
+    s = 0
     for i in range(0, len(msg), 2):
         if (i+1) < len(msg):
-            a = msg[i] 
+            a = msg[i]
             b = msg[i+1]
             s = s + (a+(b << 8))
         elif (i+1)==len(msg):
@@ -52,15 +52,15 @@ def getMTU(interface):
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
     ifr = struct.pack('16sH', interface.encode("utf-8"), 0)
     mtu = struct.unpack('16sH', ioctl(s,SIOCGIFMTU, ifr))[1]
-   
+
     s.close()
-   
+
     return mtu
-   
+
 def getNetmask(interface):
     '''
         Nombre: getNetmask
-        Descripción: Esta función obteiene la máscara de red asignada a una interfaz 
+        Descripción: Esta función obteiene la máscara de red asignada a una interfaz
         Argumentos:
             -interface: cadena con el nombre la interfaz sobre la que consultar la máscara
         Retorno: Entero de 32 bits con el valor de la máscara de red
@@ -109,9 +109,9 @@ def process_IP_datagram(us,header,data,srcMac):
                     -Protocolo
                 -Comprobar si tenemos registrada una función de callback de nivel superior consultando el diccionario protocols y usando como
                 clave el valor del campo protocolo del datagrama IP.
-                    -En caso de que haya una función de nivel superior registrada, debe llamarse a dicha funciñón 
+                    -En caso de que haya una función de nivel superior registrada, debe llamarse a dicha funciñón
                     pasando los datos (payload) contenidos en el datagrama IP.
-        
+
         Argumentos:
             -us: Datos de usuario pasados desde la llamada de pcap_loop. En nuestro caso será None
             -header: cabecera pcap_pktheader
@@ -127,14 +127,14 @@ def process_IP_datagram(us,header,data,srcMac):
 def registerIPProtocol(callback,protocol):
     '''
         Nombre: registerIPProtocol
-        Descripción: Esta función recibirá el nombre de una función y su valor de protocolo IP asociado y añadirá en la tabla 
-            (diccionario) de protocolos de nivel superior dicha asociación. 
-            Este mecanismo nos permite saber a qué función de nivel superior debemos llamar al recibir un datagrama IP  con un 
+        Descripción: Esta función recibirá el nombre de una función y su valor de protocolo IP asociado y añadirá en la tabla
+            (diccionario) de protocolos de nivel superior dicha asociación.
+            Este mecanismo nos permite saber a qué función de nivel superior debemos llamar al recibir un datagrama IP  con un
             determinado valor del campo protocolo (por ejemplo TCP o UDP).
-            Por ejemplo, podemos registrar una función llamada process_UDP_datagram asociada al valor de protocolo 17 y otra 
-            llamada process_ICMP_message asocaida al valor de protocolo 1. 
+            Por ejemplo, podemos registrar una función llamada process_UDP_datagram asociada al valor de protocolo 17 y otra
+            llamada process_ICMP_message asocaida al valor de protocolo 1.
         Argumentos:
-            -callback_fun: función de callback a ejecutar cuando se reciba el protocolo especificado. 
+            -callback_fun: función de callback a ejecutar cuando se reciba el protocolo especificado.
                 La función que se pase como argumento debe tener el siguiente prototipo: funcion(us,header,data,srcIp):
                 Dónde:
                     -us: son los datos de usuarios pasados por pcap_loop (en nuestro caso este valor será siempre None)
@@ -143,8 +143,9 @@ def registerIPProtocol(callback,protocol):
                     -srcIP: dirección IP que ha enviado el datagrama actual.
                 La función no retornará nada. Si un datagrama se quiere descartar basta con hacer un return sin valor y dejará de procesarse.
             -protocol: valor del campo protocolo de IP para el cuál se quiere registrar una función de callback.
-        Retorno: Ninguno 
+        Retorno: Ninguno
     '''
+    protocols[protocol] = callback
 
 def initIP(interface,opts=None):
     global myIP, MTU, netmask, defaultGW,ipOpts
@@ -187,14 +188,11 @@ def sendIPDatagram(dstIP,data,protocol):
             -Para cada datagrama (no fragmento):
                 -Incrementar la variable IPID en 1.
         Argumentos:
-            -dstIP: entero de 32 bits con la IP destino del datagrama 
+            -dstIP: entero de 32 bits con la IP destino del datagrama
             -data: array de bytes con los datos a incluir como payload en el datagrama
             -protocol: valor numérico del campo IP protocolo que indica el protocolo de nivel superior de los datos
             contenidos en el payload. Por ejemplo 1, 6 o 17.
         Retorno: True o False en función de si se ha enviado el datagrama correctamente o no
-          
+
     '''
     header = bytes()
-
-
-

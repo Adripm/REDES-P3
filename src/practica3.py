@@ -1,6 +1,6 @@
 '''
     practica3.py
-    Envía datagramas UDP o ICMP sobre protocolo IP. 
+    Envía datagramas UDP o ICMP sobre protocolo IP.
 
     Autor: Javier Ramos <javier.ramos@uam.es>
     2019 EPS-UAM
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 			data=f.read()
 			#Pasamos los datos de cadena a bytes
 			data = data.encode()
-	
+
 	startEthernetLevel(args.interface)
 	initICMP()
 	initUDP()
@@ -71,12 +71,12 @@ if __name__ == "__main__":
 		logging.error('Inicializando nivel IP')
 		sys.exit(-1)
 
-	
-	
-	
+
+
+
 	while True:
 		try:
-			msg = input('Introduzca opcion:\n\t1.Enviar ping\n\t2.Enviar datagrama UDP:')
+			msg = input('Introduzca opcion:\n\t1.Enviar ping\n\t2.Enviar datagrama UDP\n\t>> ')
 			if msg == 'q':
 				break
 			elif msg == '1':

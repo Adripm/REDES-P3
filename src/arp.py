@@ -91,9 +91,9 @@ def processARPRequest(data:bytes,MAC:bytes)->None:
     '''
 
     mac_origen = data[0:6] # Sender Ethernet - 6 Bytes
-    ip_origen = data[6:10] # Sender IP - 4 Bytes
+    ip_origen = struct.unpack('!I', data[6:10])[0]  # Sender IP - 4 Bytes
     # mac_destino = data[10:16] # Target Ethernet - 6 Bytes
-    ip_destino = data[16:20] # Target IP - 4 Bytes
+    ip_destino = struct.unpack('!I', data[16:20])[0] # Target IP - 4 Bytes
 
     if mac_origen != MAC:
         return

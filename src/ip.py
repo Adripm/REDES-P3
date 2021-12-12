@@ -194,7 +194,7 @@ def initIP(interface,opts=None):
     return True
 
 def sendIPDatagram(dstIP,data,protocol):
-    global IPID
+    global IPID, ipOpts
     '''
         Nombre: sendIPDatagram
         Descripción: Esta función construye un datagrama IP y lo envía. En caso de que los datos a enviar sean muy grandes la función
@@ -222,13 +222,21 @@ def sendIPDatagram(dstIP,data,protocol):
         Retorno: True o False en función de si se ha enviado el datagrama correctamente o no
 
     '''
-    header = bytes()
+    header = bytearray()
+
+    # Options padding
+    if ipOpts:
+        len_opts = len(ipOpts)
+        if len_opts % 4 != 0: # No es múltiplo de 4 bytes
+            to_pad = (ceil(len_opts / 4) * 4) - len_opts
+            ipOpts = ipOpts.ljust(to_pad)
+            len_opts = len(ipOpts)
 
     # Version - 4 BITS
     # IHL - 4 BITS
     ihl = IP_MIN_HLEN
     if ipOpts:
-        ihl += len(ipOpts)
+        ihl += len_opts
     if ihl > IP_MAX_HLEN:
         return False
     ihl = int(ihl / 4) # Palabras de 4 bytes
@@ -277,19 +285,52 @@ def sendIPDatagram(dstIP,data,protocol):
         header += ipOpts
 
     # Header construido, a excepción de Total Length (en caso de fragmentación), MF, offset y checksum
-    # print(header.hex())
+    # print('IP Header: ', header.hex())
 
     # Determinar si se debe fragmentar
     word_length = 8
     fragments = 1
+    maxpayload = MTU-(ihl*4)
     if length > MTU: # length = len(header) + len(data)
-        maxpayload = MTU-(ihl*4)
         if maxpayload % word_length != 0: # No múltiplo de 8
             maxpayload = int(maxpayload/word_length)*word_length
 
         fragments = ceil(len(data)/maxpayload)
+        # print('Fragments: ',fragments)
+
+    # Other
+    mf_flag = 0
+    if fragments > 1:
+        mf_flag = 1
 
     # Por cada fragmento
-    for _ in range(fragments):
+    for f in range(fragments):
         # Calcular Total Length, MF, offset y checksum
-        pass
+
+        # Offset
+        offset = (f*maxpayload)/word_length
+        header[6:8] = struct.pack('!H', offset) # 2 bytes
+
+        # Insertar MF Flag en la tercera posición de flags
+        # Las otras dos flags son siempre 0 en esta práctica
+        # mf = (mf_flag<<1)
+        if f == fragments - 1:
+            mf_flag = 0
+        if mf_flag == 1:
+            header[6:8] = header[6:8]|(1<<14) # 14 posiciones = bit 14 = tercer flag
+
+        # Fragment payload
+        payload = data[offset*word_length:]
+        if len(payload) > maxpayload:
+            payload = payload[:maxpayload]
+
+        # Total length
+        length = (ihl*4) + len(payload)
+        header[2:4] = struct.pack('!H', length) # 2 Bytes
+
+        # Checksum
+        header[10:12] = bytes([0x00, 0x00]) # borrar cálculo previo antes de recalcular el checksum por posibles errores
+        header[10:12] = struct.pack('!H', header) # 2 bytes
+
+        # Cabecera totalmente construida para un fragmento dado
+        # TODO:

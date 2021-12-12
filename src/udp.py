@@ -1,6 +1,8 @@
 from ip import *
 import struct
 
+import logging
+
 UDP_HLEN = 8
 UDP_PROTO = 17
 
@@ -41,7 +43,17 @@ def process_UDP_datagram(us, header, data, srcIP):
         Retorno: Ninguno
 
     '''
-    pass
+    # Extraer campos
+    source_port = struct.unpack('!H', header[0:2]) # 2 bytes
+    dest_port = struct.unpack('!H', header[2:4]) # 2 bytes
+    # length = struct.unpack('!H', header[4:6]) # 2 bytes
+    # checksum = struct.unpack('!H', header[6:8]) # 2 bytes
+
+    # En esta práctica, checksum siempre será 0. No hará falta comprobarlo
+
+    logging.info('Source Port:', source_port)
+    logging.info('Destination Port:', dest_port)
+    logging.info('Payload:', data.hex())
 
 def sendUDPDatagram(data, dstPort, dstIP):
     '''

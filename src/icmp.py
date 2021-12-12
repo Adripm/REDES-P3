@@ -3,6 +3,7 @@ from threading import Lock
 import struct
 
 from time import *
+import logging
 
 ICMP_PROTO = 1
 
@@ -43,7 +44,25 @@ def process_ICMP_message(us,header,data,srcIp):
         Retorno: Ninguno
 
     '''
+    # checksum
+    if chksum(header+data) != 0:
+        return
 
+    icmp_type = struct.unpack('!B', header[0]) # 1 byte
+    icmp_code = struct.unpack('!B', header[1]) # 1 byte
+    icmp_id = struct.unpack('!H', header[4:6]) # 2 bytes
+    icmp_seq = struct.unpack('!H', header[6:8]) # 2 bytes
+
+    logging.debug('ICMP Type:', icmp_type)
+    logging.debug('ICMP Code:', icmp_code)
+
+    if icmp_type == ICMP_ECHO_REQUEST_TYPE:
+        sendICMPMessage(data, ICMP_ECHO_REPLY_TYPE, icmp_code, icmp_id, icmp_seq, srcIP)
+    elif icmp_type == ICMP_ECHO_REPLY_TYPE:
+        sent = None
+        with timeLock:
+            sent = icmp_send_times[(dstIP, icmp_id, icmp_seqnum)]
+        logging.info('RTT: ', (time() - sent))
 
 def sendICMPMessage(data,type,code,icmp_id,icmp_seqnum,dstIP):
     '''
@@ -102,7 +121,7 @@ def sendICMPMessage(data,type,code,icmp_id,icmp_seqnum,dstIP):
     if type == ICMP_ECHO_REQUEST_TYPE:
         sent = time()
         with timeLock:
-            icmp_send_times[dstIP+icmp_id+icmp_seqnum] = sent
+            icmp_send_times[(dstIP, icmp_id, icmp_seqnum)] = sent
 
     # Enviar mensaje IP
     return sendIPDatagram(dstIP, header, ICMP_PROTO)

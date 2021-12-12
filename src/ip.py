@@ -199,7 +199,7 @@ def sendIPDatagram(dstIP,data,protocol):
         Esta función debe realizar, al menos, las siguientes tareas:
             -Determinar si se debe fragmentar o no y calcular el número de fragmentos
             -Para cada datagrama o fragmento:
-                -Construir la cabecera IP con los valores que corresponda.Incluir opciones en caso de que ipOpts sea distinto de None
+                -Construir la cabecera IP con los valores que corresponda. Incluir opciones en caso de que ipOpts sea distinto de None
                 -Calcular el checksum sobre la cabecera y añadirlo a la cabecera en la posición correcta
                 -Añadir los datos a la cabecera IP
                 -En el caso de que sea un fragmento ajustar los valores de los campos MF y offset de manera adecuada
@@ -220,3 +220,62 @@ def sendIPDatagram(dstIP,data,protocol):
 
     '''
     header = bytes()
+
+    # Version - 4 BITS
+    # IHL - 4 BITS
+    ihl = IP_MIN_HLEN
+    if ipOpts:
+        ihl += len(ipOpts)
+    if ihl > IP_MAX_HLEN:
+        return False
+    ihl = int(ihl / 4) # Palabras de 4 bytes
+    version_ihl = struct.pack('!B', ((1 << 2)|ihl)) # 1 << 2 = 0100 = 4 = version
+    header += version_ihl
+
+    # Type of Service - 1 Byte
+    header += struct.pack('!B', DEFAULT_TOS)
+
+    # Total Length - 2 Bytes
+    # Por defecto, lo pondremos a 0 y se cambiará después
+    # Variará para cada fragmento
+    # length = (ihl*4) + len(data)
+    header += bytes([0x00, 0x00])
+
+    # Identification - 2 Bytes
+    header += struct.pack('!H', IPID)
+
+    # Flags - 3 BITS
+    # Offset - 13 BITS
+    # ---
+    # 16 BITS = 2 Bytes
+    # Por defecto, se pondrá a 0x0000. Más tarde, si se realiza la fragmentación,
+    # estos valores (Flag MF y Offset) se cambiará para cada cabecera
+    header += bytes([0x00, 0x00])
+
+    # Time to Live - 1 Byte
+    header += struct.pack('!B', DEFAULT_TTL)
+
+    # Protocol - 1 Byte
+    header += struct.pack('!B', protocol)
+
+    # Header Checksum - 2 Bytes
+    # ---
+    # Por defecto, pondremos el checksum a 0 y se actualizará después
+    # Variará para cada fragmento
+    header += bytes([0x00, 0x00])
+
+    # IP Origen - 4 Bytes
+    header += struct.pack('!I', myIP)
+
+    # IP Destino - 4 Bytes
+    header += struct.pack('!I', dstIP)
+
+    # Options - min 0 Bytes < max 40 bytes
+    if ipOpts:
+        header += ipOpts
+
+    # Header construido, a excepción de Total Length, MF, offset y checksum
+    # print(header.hex())
+
+    # Determinar si se debe fragmentar
+    # ...

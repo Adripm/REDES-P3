@@ -307,17 +307,16 @@ def sendIPDatagram(dstIP,data,protocol):
     for f in range(fragments):
         # Calcular Total Length, MF, offset y checksum
 
-        # Offset
-        offset = (f*maxpayload)/word_length
-        header[6:8] = struct.pack('!H', offset) # 2 bytes
-
+        # Offset y MF Flag
+        offset = int((f*maxpayload)/word_length)
         # Insertar MF Flag en la tercera posición de flags
         # Las otras dos flags son siempre 0 en esta práctica
-        # mf = (mf_flag<<1)
         if f == fragments - 1:
             mf_flag = 0
         if mf_flag == 1:
-            header[6:8] = header[6:8]|(1<<14) # 14 posiciones = bit 14 = tercer flag
+            header[6:8] = struct.pack('!H', (offset|(1<<14))) # 14 posiciones = bit 14 = tercer flag
+        else:
+            header[6:8] = struct.pack('!H', offset) # All flags = 0
 
         # Fragment payload
         payload = data[offset*word_length:]
@@ -330,7 +329,7 @@ def sendIPDatagram(dstIP,data,protocol):
 
         # Checksum
         header[10:12] = bytes([0x00, 0x00]) # borrar cálculo previo antes de recalcular el checksum por posibles errores
-        header[10:12] = struct.pack('!H', header) # 2 bytes
+        header[10:12] = struct.pack('!H', chksum(header)) # 2 bytes
 
         # Cabecera totalmente construida para un fragmento dado
         # TODO:

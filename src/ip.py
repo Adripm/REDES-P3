@@ -4,6 +4,9 @@ from fcntl import ioctl
 import subprocess
 SIOCGIFMTU = 0x8921
 SIOCGIFNETMASK = 0x891b
+
+from math import ceil
+
 #Diccionario de protocolos. Las claves con los valores numéricos de protocolos de nivel superior a IP
 #por ejemplo (1, 6 o 17) y los valores son los nombres de las funciones de callback a ejecutar.
 protocols={}
@@ -236,10 +239,9 @@ def sendIPDatagram(dstIP,data,protocol):
     header += struct.pack('!B', DEFAULT_TOS)
 
     # Total Length - 2 Bytes
-    # Por defecto, lo pondremos a 0 y se cambiará después
-    # Variará para cada fragmento
-    # length = (ihl*4) + len(data)
-    header += bytes([0x00, 0x00])
+    # En caso de fragmentación, se recalculará para cada fragmento
+    length = (ihl*4) + len(data)
+    header += struct.pack('!H', length)
 
     # Identification - 2 Bytes
     header += struct.pack('!H', IPID)
@@ -274,8 +276,20 @@ def sendIPDatagram(dstIP,data,protocol):
     if ipOpts:
         header += ipOpts
 
-    # Header construido, a excepción de Total Length, MF, offset y checksum
+    # Header construido, a excepción de Total Length (en caso de fragmentación), MF, offset y checksum
     # print(header.hex())
 
     # Determinar si se debe fragmentar
-    # ...
+    word_length = 8
+    fragments = 1
+    if length > MTU: # length = len(header) + len(data)
+        maxpayload = MTU-(ihl*4)
+        if maxpayload % word_length != 0: # No múltiplo de 8
+            maxpayload = int(maxpayload/word_length)*word_length
+
+        fragments = ceil(len(data)/maxpayload)
+
+    # Por cada fragmento
+    for _ in range(fragments):
+        # Calcular Total Length, MF, offset y checksum
+        pass

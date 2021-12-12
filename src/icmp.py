@@ -2,7 +2,7 @@ from ip import *
 from threading import Lock
 import struct
 
-from time import time
+from time import *
 
 ICMP_PROTO = 1
 
@@ -100,7 +100,7 @@ def sendICMPMessage(data,type,code,icmp_id,icmp_seqnum,dstIP):
 
     # Echo request type
     if type == ICMP_ECHO_REQUEST_TYPE:
-        sent = time.time()
+        sent = time()
         with timeLock:
             icmp_send_times[dstIP+icmp_id+icmp_seqnum] = sent
 

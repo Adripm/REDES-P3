@@ -332,4 +332,22 @@ def sendIPDatagram(dstIP,data,protocol):
         header[10:12] = struct.pack('!H', chksum(header)) # 2 bytes
 
         # Cabecera totalmente construida para un fragmento dado
-        # TODO:
+
+        # Encontrar dirección MAC
+        mac = None
+        if myIP&netmask == dstIP&netmask: # Misma subred
+            mac = ARPResolution(dstIP)
+        else: # Diferente red
+            mac = ARPResolution(defaultGW)
+            
+        if mac is None: # No encontrada
+            return False
+
+        # Enviar fragmentos
+        frag = header + payload
+        if sendEthernetFrame(frag, len(frag), 0x0800, mac) == -1: # 0x0800 = IPv4 Ethertype
+            return False
+
+    IPID += 1
+
+    return True # Datagrama enviado correctamente

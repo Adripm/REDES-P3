@@ -39,9 +39,9 @@ def process_ICMP_message(us,header,data,srcIp):
             -data: array de bytes con el conenido del mensaje ICMP
             -srcIP: dirección IP que ha enviado el datagrama actual.
         Retorno: Ninguno
-          
+
     '''
-    
+
 
 def sendICMPMessage(data,type,code,icmp_id,icmp_seqnum,dstIP):
     '''
@@ -58,23 +58,23 @@ def sendICMPMessage(data,type,code,icmp_id,icmp_seqnum,dstIP):
                     -Se debe proteger al acceso al diccionario usando la variable timeLock
 
                 -Llamar a sendIPDatagram para enviar el mensaje ICMP
-                
+
             -Si no:
                 -Tipo no soportado. Se devuelve False
 
         Argumentos:
             -data: array de bytes con los datos a incluir como payload en el mensaje ICMP
             -type: valor del campo tipo de ICMP
-            -code: valor del campo code de ICMP 
+            -code: valor del campo code de ICMP
             -icmp_id: entero que contiene el valor del campo ID de ICMP a enviar
             -icmp_seqnum: entero que contiene el valor del campo Seqnum de ICMP a enviar
             -dstIP: entero de 32 bits con la IP destino del mensaje ICMP
         Retorno: True o False en función de si se ha enviado el mensaje correctamente o no
-          
+
     '''
-  
+
     message = bytes()
-   
+
 def initICMP():
     '''
         Nombre: initICMP
@@ -85,5 +85,6 @@ def initICMP():
         Argumentos:
             -Ninguno
         Retorno: Ninguno
-          
+
     '''
+    registerIPProtocol(process_ICMP_message, ICMP_PROTO)

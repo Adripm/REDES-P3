@@ -6,6 +6,7 @@ SIOCGIFMTU = 0x8921
 SIOCGIFNETMASK = 0x891b
 
 from math import ceil
+import logging
 
 #Diccionario de protocolos. Las claves con los valores numéricos de protocolos de nivel superior a IP
 #por ejemplo (1, 6 o 17) y los valores son los nombres de las funciones de callback a ejecutar.
@@ -112,7 +113,7 @@ def process_IP_datagram(us,header,data,srcMac):
                     -Protocolo
                 -Comprobar si tenemos registrada una función de callback de nivel superior consultando el diccionario protocols y usando como
                 clave el valor del campo protocolo del datagrama IP.
-                    -En caso de que haya una función de nivel superior registrada, debe llamarse a dicha funciñón
+                    -En caso de que haya una función de nivel superior registrada, debe llamarse a dicha función
                     pasando los datos (payload) contenidos en el datagrama IP.
 
         Argumentos:
@@ -122,10 +123,38 @@ def process_IP_datagram(us,header,data,srcMac):
             -srcMac: MAC origen de la trama Ethernet que se ha recibido
         Retorno: Ninguno
     '''
+    # Comprobar checksum
+    if chksum(header) != 0:
+        # Error
+        return
 
+    # Comprobar MF y offset
+    offset = struct.unpack('!H', (header[6:8] & 0x1FFF)) # 13 bits menos significativos
+    if offset != 0:
+        # No reensamblar
+        return
 
+    # Extraer campos
+    ihl = header[0] & (0x0F) # 4 bits más a la derecha
+    df = (header[6] & 0x20) >> 6 # segundo bit más significativo
+    mf = (header[6] & 0x10) >> 5 # tercer bit más significativo
+    id = struct.unpack('!H', header[4:6]) # 2 bytes
+    ip_origen = struct.unpack('!I', header[12:16]) # 4 bytes
+    ip_dest = struct.unpack('!I', header[16:20]) # 4 bytes
+    prot = struct.unpack('!B', header[9]) # 1 Byte
 
+    # Logging
+    logging.debug('IHL:', ihl) # palabras de 4 bytes
+    logging.debug('IPID:', id)
+    logging.debug('DF:', df)
+    logging.debug('MF:', mf)
+    logging.debug('Offset:', offset)
+    logging.debug('IP origen:',ip_origen)
+    logging.debug('IP destino:',ip_dest)
+    logging.debug('Protocol:',prot)
 
+    if prot in protocols:
+        protocols[prot](us, header, data, ip_origen)
 
 def registerIPProtocol(callback,protocol):
     '''
@@ -339,12 +368,13 @@ def sendIPDatagram(dstIP,data,protocol):
             mac = ARPResolution(dstIP)
         else: # Diferente red
             mac = ARPResolution(defaultGW)
-            
+
         if mac is None: # No encontrada
             return False
 
         # Enviar fragmentos
         frag = header + payload
+        # print('----- Fragmento',f,'-----:\n',frag.hex())
         if sendEthernetFrame(frag, len(frag), 0x0800, mac) == -1: # 0x0800 = IPv4 Ethertype
             return False
 

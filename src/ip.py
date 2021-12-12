@@ -85,7 +85,7 @@ def getDefaultGW(interface):
     '''
     p = subprocess.Popen(['ip r | grep default | awk \'{print $3}\''], stdout=subprocess.PIPE, shell=True)
     dfw = p.stdout.read().decode('utf-8')
-    print(dfw)
+    # print(dfw)
     return struct.unpack('!I',socket.inet_aton(dfw))[0]
 
 
@@ -148,7 +148,7 @@ def registerIPProtocol(callback,protocol):
     protocols[protocol] = callback
 
 def initIP(interface,opts=None):
-    global myIP, MTU, netmask, defaultGW,ipOpts
+    global myIP, MTU, netmask, defaultGW, ipOpts
     '''
         Nombre: initIP
         Descripción: Esta función inicializará el nivel IP. Esta función debe realizar, al menos, las siguientes tareas:
@@ -165,6 +165,30 @@ def initIP(interface,opts=None):
             -opts: array de bytes con las opciones a nivel IP a incluir en los datagramas o None si no hay opciones a añadir
         Retorno: True o False en función de si se ha inicializado el nivel o no
     '''
+
+    myIP = None
+    MTU = None
+    netmask = None
+    defaultGW = None
+
+    if initARP(interface) == -1:
+        return False
+
+    myIP = getIP(interface)
+    MTU = getMTU(interface)
+    netmask = getNetmask(interface)
+    defaultGW = getDefaultGW(interface)
+
+    ipOpts = opts
+
+    # Control de errores
+    if not myIP or not MTU or not netmask or not defaultGW:
+        return False
+
+    # Registrar callback en el nivel de enlace
+    registerCallback(process_IP_datagram, 0x0800)
+
+    return True
 
 def sendIPDatagram(dstIP,data,protocol):
     global IPID

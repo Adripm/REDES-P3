@@ -71,12 +71,9 @@ if __name__ == "__main__":
 		logging.error('Inicializando nivel IP')
 		sys.exit(-1)
 
-
-
-
 	while True:
 		try:
-			msg = input('Introduzca opcion:\n\t1.Enviar ping\n\t2.Enviar datagrama UDP\n\t>> ')
+			msg = input('Introduzca opcion:\n\t1. Enviar ping\n\t2. Enviar datagrama UDP\n\tq. Cerrar\n\t>> ')
 			if msg == 'q':
 				break
 			elif msg == '1':

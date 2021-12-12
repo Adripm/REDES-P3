@@ -60,8 +60,15 @@ def sendUDPDatagram(data, dstPort, dstIP):
             -dstIP: entero de 32 bits con la IP destino del datagrama UDP
         Retorno: True o False en función de si se ha enviado el datagrama correctamente o no
     '''
+    # Crear trama UDP
     datagram = bytes()
-    pass
+    datagram += struct.pack('!H', getUDPSourcePort()) # Source Port - 2 Bytes
+    datagram += struct.pack('!H', dstPort) # Destination Port - 2 Bytes
+    datagram += struct.pack('!H', UDP_HLEN + len(data)) # Length - 2 Bytes
+    datagram += bytes([0x00, 0x00]) # Checksum - 2 Bytes - Es opcional, en la práctica su valor siempre será cero
+    datagram += data
+
+    return sendIPDatagram(dstIP, datagram, UDP_PROTO)
 
 def initUDP():
     '''
@@ -75,4 +82,4 @@ def initUDP():
         Retorno: Ninguno
 
     '''
-    registerIPProtocol(process_UDP_datagram, 17)
+    registerIPProtocol(process_UDP_datagram, UDP_PROTO)

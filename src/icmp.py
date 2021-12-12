@@ -2,6 +2,8 @@ from ip import *
 from threading import Lock
 import struct
 
+from time import time
+
 ICMP_PROTO = 1
 
 
@@ -73,7 +75,37 @@ def sendICMPMessage(data,type,code,icmp_id,icmp_seqnum,dstIP):
 
     '''
 
-    message = bytes()
+    # Tipos no soportados
+    if type != ICMP_ECHO_REQUEST_TYPE and type != ICMP_ECHO_REPLY_TYPE:
+        return False
+
+    # Construir la cabecera ICMP
+    header = bytearray()
+    header += struct.pack('!B', type) # 1 Byte
+    header += struct.pack('!B', code) # 1 Byte
+    header += bytes([0x00, 0x00]) # 2 Bytes - checksum se calculará después
+    header += struct.pack('!H', icmp_id) # 2 Bytes - ID
+    header += struct.pack('!H', icmp_seqnum) # 2 Bytes - Sequence Number
+
+    if (len(data)+len(header)) % 2 != 0: # Si mensaje de tamaño impar
+        data += bytes([0x00]) # Forzar par
+
+    # Añadir payload
+    message = header + data
+
+    # Cálculo del checksum
+    message[2:4] = struct.pack('!H', chksum(message)) # 2 Bytes - checksum
+
+    # Mensaje completo
+
+    # Echo request type
+    if type == ICMP_ECHO_REQUEST_TYPE:
+        sent = time.time()
+        with timeLock:
+            icmp_send_times[dstIP+icmp_id+icmp_seqnum] = sent
+
+    # Enviar mensaje IP
+    return sendIPDatagram(dstIP, header, ICMP_PROTO)
 
 def initICMP():
     '''

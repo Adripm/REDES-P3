@@ -63,7 +63,7 @@ def process_ICMP_message(us,header,data,srcIp):
     elif icmp_type == ICMP_ECHO_REPLY_TYPE:
         sent = None
         with timeLock:
-            sent = icmp_send_times[(srcIp, icmp_id, icmp_seqnum)]
+            sent = icmp_send_times[(srcIp, icmp_id, icmp_seq)]
         logging.info('RTT: '+str((time() - sent)))
 
 def sendICMPMessage(data,type,code,icmp_id,icmp_seqnum,dstIP):

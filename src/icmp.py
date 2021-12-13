@@ -59,7 +59,7 @@ def process_ICMP_message(us,header,data,srcIp):
     payload = data[8:]
 
     if icmp_type == ICMP_ECHO_REQUEST_TYPE:
-        sendICMPMessage(payload, ICMP_ECHO_REPLY_TYPE, icmp_code, icmp_id, icmp_seq, srcIP)
+        sendICMPMessage(payload, ICMP_ECHO_REPLY_TYPE, icmp_code, icmp_id, icmp_seq, srcIp)
     elif icmp_type == ICMP_ECHO_REPLY_TYPE:
         sent = None
         with timeLock:

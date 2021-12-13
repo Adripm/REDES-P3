@@ -44,7 +44,7 @@ def process_ICMP_message(us,header,data,srcIp):
         Retorno: Ninguno
 
     '''
-    # checksum
+    # checksum, NO IMPLEMENTADO CORRECTAMENTE
     # if chksum(data) != 0:
     #     return
 

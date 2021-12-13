@@ -127,16 +127,16 @@ def process_IP_datagram(us,header,data,srcMac):
     ip_header = data[:ihl*4]
     payload = data[ihl*4:]
 
-    # Comprobar checksum
+    # Comprobar checksum, NO IMPLEMENTADO CORRECTAMENTE
     # if chksum(ip_header) != 0:
     #     # Error
     #     return
 
     # Comprobar MF y offset
-    # offset = struct.unpack('!H', (data[6:8] & 0x1FFF)) # 13 bits menos significativos
-    # if offset != 0:
-    #     # No reensamblar
-    #     return
+    offset = struct.unpack('!H', (data[6:8]))[0] & 0x1FFF # 13 bits menos significativos
+    if offset != 0:
+        # No reensamblar
+        return
 
     # Extraer campos
     df = (data[6] & 0x20) >> 6 # segundo bit más significativo
@@ -151,7 +151,7 @@ def process_IP_datagram(us,header,data,srcMac):
     logging.debug('IPID: '+str(id))
     logging.debug('DF: '+str(df))
     logging.debug('MF: '+str(mf))
-    # logging.debug('Offset: '+str(offset))
+    logging.debug('Offset: '+str(offset))
     logging.debug('IP origen: '+str(ip_origen))
     logging.debug('IP destino: '+str(ip_dest))
     logging.debug('Protocol: '+str(prot))
@@ -377,6 +377,7 @@ def sendIPDatagram(dstIP,data,protocol):
 
         # Enviar fragmentos
         frag = header + payload
+        # print('Fragmento: ',f, offset)
         # print('----- Fragmento',f,'-----:\n',frag.hex())
         if sendEthernetFrame(frag, len(frag), 0x0800, mac) == -1: # 0x0800 = IPv4 Ethertype
             return False

@@ -124,24 +124,24 @@ def process_IP_datagram(us,header,data,srcMac):
         Retorno: Ninguno
     '''
     # Comprobar checksum
-    if chksum(header) != 0:
+    if chksum(data) != 0:
         # Error
         return
 
     # Comprobar MF y offset
-    offset = struct.unpack('!H', (header[6:8] & 0x1FFF)) # 13 bits menos significativos
+    offset = struct.unpack('!H', (data[6:8] & 0x1FFF)) # 13 bits menos significativos
     if offset != 0:
         # No reensamblar
         return
 
     # Extraer campos
-    ihl = header[0] & (0x0F) # 4 bits más a la derecha
-    df = (header[6] & 0x20) >> 6 # segundo bit más significativo
-    mf = (header[6] & 0x10) >> 5 # tercer bit más significativo
-    id = struct.unpack('!H', header[4:6]) # 2 bytes
-    ip_origen = struct.unpack('!I', header[12:16]) # 4 bytes
-    ip_dest = struct.unpack('!I', header[16:20]) # 4 bytes
-    prot = struct.unpack('!B', header[9]) # 1 Byte
+    ihl = data[0] & (0x0F) # 4 bits más a la derecha
+    df = (data[6] & 0x20) >> 6 # segundo bit más significativo
+    mf = (data[6] & 0x10) >> 5 # tercer bit más significativo
+    id = struct.unpack('!H', data[4:6]) # 2 bytes
+    ip_origen = struct.unpack('!I', data[12:16]) # 4 bytes
+    ip_dest = struct.unpack('!I', data[16:20]) # 4 bytes
+    prot = struct.unpack('!B', data[9]) # 1 Byte
 
     # Logging
     logging.debug('IHL:', ihl) # palabras de 4 bytes
@@ -153,8 +153,10 @@ def process_IP_datagram(us,header,data,srcMac):
     logging.debug('IP destino:',ip_dest)
     logging.debug('Protocol:',prot)
 
+    payload = data[ihl*4:]
+
     if prot in protocols:
-        protocols[prot](us, header, data, ip_origen)
+        protocols[prot](us, header, payload, ip_origen)
 
 def registerIPProtocol(callback,protocol):
     '''

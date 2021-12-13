@@ -45,19 +45,21 @@ def process_ICMP_message(us,header,data,srcIp):
 
     '''
     # checksum
-    if chksum(header+data) != 0:
+    if chksum(data) != 0:
         return
 
-    icmp_type = struct.unpack('!B', header[0]) # 1 byte
-    icmp_code = struct.unpack('!B', header[1]) # 1 byte
-    icmp_id = struct.unpack('!H', header[4:6]) # 2 bytes
-    icmp_seq = struct.unpack('!H', header[6:8]) # 2 bytes
+    icmp_type = struct.unpack('!B', data[0]) # 1 byte
+    icmp_code = struct.unpack('!B', data[1]) # 1 byte
+    icmp_id = struct.unpack('!H', data[4:6]) # 2 bytes
+    icmp_seq = struct.unpack('!H', data[6:8]) # 2 bytes
 
     logging.debug('ICMP Type:', icmp_type)
     logging.debug('ICMP Code:', icmp_code)
 
+    payload = data[8:]
+
     if icmp_type == ICMP_ECHO_REQUEST_TYPE:
-        sendICMPMessage(data, ICMP_ECHO_REPLY_TYPE, icmp_code, icmp_id, icmp_seq, srcIP)
+        sendICMPMessage(payload, ICMP_ECHO_REPLY_TYPE, icmp_code, icmp_id, icmp_seq, srcIP)
     elif icmp_type == ICMP_ECHO_REPLY_TYPE:
         sent = None
         with timeLock:

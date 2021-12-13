@@ -53,8 +53,8 @@ def process_ICMP_message(us,header,data,srcIp):
     icmp_id = struct.unpack('!H', data[4:6]) # 2 bytes
     icmp_seq = struct.unpack('!H', data[6:8]) # 2 bytes
 
-    logging.debug('ICMP Type:', icmp_type)
-    logging.debug('ICMP Code:', icmp_code)
+    logging.debug('ICMP Type:'+str(icmp_type))
+    logging.debug('ICMP Code:'+str(icmp_code))
 
     payload = data[8:]
 
@@ -64,7 +64,7 @@ def process_ICMP_message(us,header,data,srcIp):
         sent = None
         with timeLock:
             sent = icmp_send_times[(dstIP, icmp_id, icmp_seqnum)]
-        logging.info('RTT: ', (time() - sent))
+        logging.info('RTT: '+str((time() - sent)))
 
 def sendICMPMessage(data,type,code,icmp_id,icmp_seqnum,dstIP):
     '''

@@ -144,8 +144,7 @@ def process_IP_datagram(us,header,data,srcMac):
     id = struct.unpack('!H', data[4:6]) # 2 bytes
     ip_origen = struct.unpack('!I', data[12:16]) # 4 bytes
     ip_dest = struct.unpack('!I', data[16:20]) # 4 bytes
-    # prot = struct.unpack('!B', data[9]) # 1 Byte
-    prot = data[9]
+    prot = data[9] # 1 byte
 
     # Logging
     logging.debug('IHL: '+str(ihl)) # palabras de 4 bytes

@@ -48,8 +48,8 @@ def process_ICMP_message(us,header,data,srcIp):
     # if chksum(data) != 0:
     #     return
 
-    icmp_type = struct.unpack('!B', data[0]) # 1 byte
-    icmp_code = struct.unpack('!B', data[1]) # 1 byte
+    icmp_type = data[0] # 1 byte
+    icmp_code = data[1] # 1 byte
     icmp_id = struct.unpack('!H', data[4:6]) # 2 bytes
     icmp_seq = struct.unpack('!H', data[6:8]) # 2 bytes
 

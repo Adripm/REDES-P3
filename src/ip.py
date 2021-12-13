@@ -271,7 +271,7 @@ def sendIPDatagram(dstIP,data,protocol):
     if ihl > IP_MAX_HLEN:
         return False
     ihl = int(ihl / 4) # Palabras de 4 bytes
-    version_ihl = struct.pack('!B', ((1 << 2)|ihl)) # 1 << 2 = 0100 = 4 = version
+    version_ihl = struct.pack('!B', ((1 << 6)|ihl)) # 1 << 2 = 0100 0000 => 4 = version
     header += version_ihl
 
     # Type of Service - 1 Byte

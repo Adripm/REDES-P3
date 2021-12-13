@@ -51,9 +51,9 @@ def process_UDP_datagram(us, header, data, srcIP):
 
     # En esta práctica, checksum siempre será 0. No hará falta comprobarlo
 
-    logging.info('Source Port:', source_port)
-    logging.info('Destination Port:', dest_port)
-    logging.info('Payload:', data.hex())
+    logging.info('Source Port:'+str(source_port))
+    logging.info('Destination Port:'+str(dest_port))
+    logging.info('Payload:'+str(data.hex()))
 
 def sendUDPDatagram(data, dstPort, dstIP):
     '''

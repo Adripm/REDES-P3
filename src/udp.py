@@ -44,10 +44,10 @@ def process_UDP_datagram(us, header, data, srcIP):
 
     '''
     # Extraer campos
-    source_port = struct.unpack('!H', header[0:2])[0] # 2 bytes
-    dest_port = struct.unpack('!H', header[2:4])[0] # 2 bytes
-    # length = struct.unpack('!H', header[4:6]) # 2 bytes
-    # checksum = struct.unpack('!H', header[6:8]) # 2 bytes
+    source_port = struct.unpack('!H', data[0:2])[0] # 2 bytes
+    dest_port = struct.unpack('!H', data[2:4])[0] # 2 bytes
+    # length = struct.unpack('!H', data[4:6]) # 2 bytes
+    # checksum = struct.unpack('!H', data[6:8]) # 2 bytes
 
     # En esta práctica, checksum siempre será 0. No hará falta comprobarlo
 

@@ -152,7 +152,7 @@ def process_IP_datagram(us,header,data,srcMac):
     logging.debug('IPID: '+str(id))
     logging.debug('DF: '+str(df))
     logging.debug('MF: '+str(mf))
-    logging.debug('Offset: '+str(offset))
+    # logging.debug('Offset: '+str(offset))
     logging.debug('IP origen: '+str(ip_origen))
     logging.debug('IP destino: '+str(ip_dest))
     logging.debug('Protocol: '+str(prot))

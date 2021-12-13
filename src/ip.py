@@ -141,9 +141,9 @@ def process_IP_datagram(us,header,data,srcMac):
     # Extraer campos
     df = (data[6] & 0x20) >> 6 # segundo bit más significativo
     mf = (data[6] & 0x10) >> 5 # tercer bit más significativo
-    id = struct.unpack('!H', data[4:6]) # 2 bytes
-    ip_origen = struct.unpack('!I', data[12:16]) # 4 bytes
-    ip_dest = struct.unpack('!I', data[16:20]) # 4 bytes
+    id = struct.unpack('!H', data[4:6])[0] # 2 bytes
+    ip_origen = struct.unpack('!I', data[12:16])[0] # 4 bytes
+    ip_dest = struct.unpack('!I', data[16:20])[0] # 4 bytes
     prot = data[9] # 1 byte
 
     # Logging

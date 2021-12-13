@@ -123,37 +123,39 @@ def process_IP_datagram(us,header,data,srcMac):
             -srcMac: MAC origen de la trama Ethernet que se ha recibido
         Retorno: Ninguno
     '''
+    ihl = data[0] & (0x0F) # 4 bits más a la derecha
+    ip_header = data[:ihl*4]
+    payload = data[ihl*4:]
+
     # Comprobar checksum
-    if chksum(data) != 0:
-        # Error
-        return
+    # if chksum(ip_header) != 0:
+    #     # Error
+    #     return
 
     # Comprobar MF y offset
-    offset = struct.unpack('!H', (data[6:8] & 0x1FFF)) # 13 bits menos significativos
-    if offset != 0:
-        # No reensamblar
-        return
+    # offset = struct.unpack('!H', (data[6:8] & 0x1FFF)) # 13 bits menos significativos
+    # if offset != 0:
+    #     # No reensamblar
+    #     return
 
     # Extraer campos
-    ihl = data[0] & (0x0F) # 4 bits más a la derecha
     df = (data[6] & 0x20) >> 6 # segundo bit más significativo
     mf = (data[6] & 0x10) >> 5 # tercer bit más significativo
     id = struct.unpack('!H', data[4:6]) # 2 bytes
     ip_origen = struct.unpack('!I', data[12:16]) # 4 bytes
     ip_dest = struct.unpack('!I', data[16:20]) # 4 bytes
-    prot = struct.unpack('!B', data[9]) # 1 Byte
+    # prot = struct.unpack('!B', data[9]) # 1 Byte
+    prot = data[9]
 
     # Logging
-    logging.debug('IHL:', ihl) # palabras de 4 bytes
-    logging.debug('IPID:', id)
-    logging.debug('DF:', df)
-    logging.debug('MF:', mf)
-    logging.debug('Offset:', offset)
-    logging.debug('IP origen:',ip_origen)
-    logging.debug('IP destino:',ip_dest)
-    logging.debug('Protocol:',prot)
-
-    payload = data[ihl*4:]
+    logging.debug('IHL: '+str(ihl)) # palabras de 4 bytes
+    logging.debug('IPID: '+str(id))
+    logging.debug('DF: '+str(df))
+    logging.debug('MF: '+str(mf))
+    logging.debug('Offset: '+str(offset))
+    logging.debug('IP origen: '+str(ip_origen))
+    logging.debug('IP destino: '+str(ip_dest))
+    logging.debug('Protocol: '+str(prot))
 
     if prot in protocols:
         protocols[prot](us, header, payload, ip_origen)
